@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Algorithms and Bar Graph</title>
+    <style>
+        /* Same styling as before */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        header {
+            background-color: #336116;
+            color: #cec81f;
+            padding: 10px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        header h1 {
+            font-size: 1.5em;
+            margin: 0;
+        }
+        .sorting-buttons {
+            display: flex;
+            gap: 0;
+        }
+        .sorting-buttons button {
+            margin: 0;
+        }
+        .graph-container {
+            display: flex;
+            padding: 30px;
+            justify-content: flex-start;
+            align-items: flex-end;
+            height: 200px; /* Set a fixed height for the graph */
+            width: 80%;
+        }
+        .bar {
+            flex: 1; /* Each bar takes equal width */
+            background-color: #8f82cd;
+            margin: 0 2px;
+            position: relative;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .bar-value {
+            margin-top: 5px;
+            color: white;
+        }
+        .footup
+        {
+            background-color: #b7ccaa;
+            color: #cec81f;
+            position: fixed;
+            gap: 0;
+            padding: 15px;
+            bottom: 50px;
+            width: 100%;
+        }
+        .footer {
+    position: fixed;
+    bottom: 10px;
+    width: 100%;
+    background-color: #569c2b;
+    color: #cec81f;
+    padding: 10px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.footer button {
+    padding: 10px;
+    display: flex;
+    gap: 0;
+    font-size: 14px;
+    background-color: #ebf2ec; /* Button color similar to sorting buttons */
+    color: rgb(25, 13, 13); /* Text color */
+    border: none;
+    cursor: pointer;
+    margin: 0; /* Remove any default margin */
+}
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Comparison Sorting Algorithms</h1>
+    </header>
+    <div class="sorting-buttons">
+        <button onclick="randomizeArray()">Randomize Array</button>
+        <button onclick="applyInsertionSort()">Insertion Sort</button>
+        <button onclick="applySelectionSort()">Selection Sort</button>
+        <button onclick="applyBubbleSort()">Bubble Sort</button>
+        <button onclick="applyShellSort()">Shell Sort</button>
+        <!-- Add other sorting buttons as needed -->
+    </div>
+    <div class="footer">
+        Algorithm Visualization
+    </div>
+    <div class="footup">
+        
+        <button onclick="skipBack()">Skip Back</button>
+        <button onclick="stepBack()">Step Back</button>
+        <button onclick="pause()">Pause</button>
+        <button onclick="stepForward()">Step Forward</button>
+        <button onclick="skipForward()">Skip Forward</button>
+    </div>
+    <div class="graph-container" id="graph-container">
+        <!-- Bars will be dynamically added here using JavaScript -->
+    </div>
+    
+    <script>
+
+let animationInProgress = false;
+let currentStep = 0;
+let animationSteps = [];
+
+function disableButtons() {
+    document.querySelectorAll('.sorting-buttons button').forEach(button => {
+        button.disabled = true;
+    });
+}
+
+function enableButtons() {
+    document.querySelectorAll('.sorting-buttons button').forEach(button => {
+        button.disabled = false;
+    });
+}
+
+function updateButtons() {
+    const stepForwardButton = document.querySelector('.footup button:nth-child(4)');
+    const skipForwardButton = document.querySelector('.footup button:nth-child(5)');
+    stepForwardButton.disabled = currentStep >= animationSteps.length - 1;
+    skipForwardButton.disabled = currentStep >= animationSteps.length - 1;
+}
+
+async function executeNextStep() {
+    if (currentStep < animationSteps.length) {
+        const step = animationSteps[currentStep];
+        await step();
+        currentStep++;
+        updateButtons();
+    }
+}
+
+async function runSortingAlgorithm(sortingFunction) {
+    disableButtons();
+    animationInProgress = true;
+    currentStep = 0;
+    animationSteps = [];
+
+    await sortingFunction();
+
+    animationInProgress = false;
+    enableButtons();
+    updateButtons();
+}
+
+function skipBack() {
+    if (!animationInProgress && currentStep > 0) {
+        currentStep -= 2;
+        executeNextStep();
+    }
+}
+
+function stepBack() {
+    if (!animationInProgress && currentStep > 0) {
+        currentStep--;
+        executeNextStep();
+    }
+}
+
+function pause() {
+    animationInProgress = false;
+    enableButtons();
+}
+
+function stepForward() {
+    if (!animationInProgress && currentStep < animationSteps.length) {
+        executeNextStep();
+    }
+}
+
+function skipForward() {
+    if (!animationInProgress && currentStep < animationSteps.length) {
+        currentStep++;
+        executeNextStep();
+    }
+}
+
+        function generateRandomValues(count) {
+            const values = [];
+            for (let i = 0; i < count; i++) {
+                values.push(Math.floor(Math.random() * 100) + 1);
+            }
+            return values;
+        }
+
+        function randomizeArray() {
+            const randomValues = generateRandomValues(numberOfBars);
+            createBars(graphContainer, randomValues);
+        }
+
+        function applyInsertionSort() {
+            insertionSortAnimation();
+        }
+
+        function applySelectionSort() {
+            selectionSortAnimation();
+        }
+
+        function applyBubbleSort() {
+            bubbleSortAnimation();
+        }
+
+        function applyMergeSort() {
+            mergeSortAnimation();
+        }
+
+        function applyQuickSort() {
+            quickSortAnimation();
+        }
+
+        function applyShellSort() {
+            shellSortAnimation();
+        }
+
+        function createBars(container, values) {
+            const existingBars = document.querySelectorAll('.bar');
+            existingBars.forEach(bar => bar.remove());
+
+            const maxValue = Math.max(...values);
+
+            values.forEach(value => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                const heightPercentage = (value / maxValue) * 100;
+                bar.style.height = `${heightPercentage}%`;
+
+                const barValue = document.createElement('div');
+                barValue.className = 'bar-value';
+                barValue.textContent = value;
+
+                bar.appendChild(barValue);
+                container.appendChild(bar);
+            });
+        }
+
+        async function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+async function insertionSortAnimation() {
+    const bars = document.querySelectorAll('.bar');
+    const values = Array.from(bars).map(bar => parseInt(bar.style.height));
+
+    for (let i = 1; i < values.length; i++) {
+        let j = i - 1;
+        const key = values[i];
+        while (j >= 0 && values[j] > key) {
+            bars[j + 1].style.backgroundColor = 'red';
+            bars[j].style.backgroundColor = 'red';
+            await sleep(300);
+
+            values[j + 1] = values[j];
+            bars[j + 1].style.height = `${values[j]}%`;
+            bars[j + 1].querySelector('.bar-value').textContent = values[j];
+            await sleep(300);
+
+            bars[j + 1].style.backgroundColor = '#4CAF50';
+            bars[j].style.backgroundColor = '#4CAF50';
+            j--;
+        }
+
+        values[j + 1] = key;
+        bars[j + 1].style.height = `${key}%`;
+        bars[j + 1].querySelector('.bar-value').textContent = key;
+
+        // Add this step to the animationSteps array
+        animationSteps.push(async function () {
+            bars[i].style.backgroundColor = '#00bcd4';
+            await sleep(3);
+        });
+    }
+}
+
+
+async function selectionSortAnimation() {
+    const bars = document.querySelectorAll('.bar');
+    const values = Array.from(bars).map(bar => parseInt(bar.style.height));
+
+    for (let i = 0; i < values.length - 1; i++) {
+        let minIndex = i;
+        for (let j = i + 1; j < values.length; j++) {
+            bars[j].style.backgroundColor = 'red';
+            await sleep(3);
+
+            if (values[j] < values[minIndex]) {
+                bars[minIndex].style.backgroundColor = '#4CAF50';
+                minIndex = j;
+            } else {
+                bars[j].style.backgroundColor = '#4CAF50';
+            }
+        }
+
+        const temp = values[minIndex];
+        values[minIndex] = values[i];
+        values[i] = temp;
+
+        bars[minIndex].style.height = `${values[minIndex]}%`;
+        bars[minIndex].querySelector('.bar-value').textContent = values[minIndex];
+
+        bars[i].style.height = `${values[i]}%`;
+        bars[i].querySelector('.bar-value').textContent = values[i];
+
+        await sleep(3);
+    }
+}
+
+
+async function bubbleSortAnimation() {
+    const bars = document.querySelectorAll('.bar');
+    const values = Array.from(bars).map(bar => parseInt(bar.style.height));
+
+    for (let i = 0; i < values.length - 1; i++) {
+        for (let j = 0; j < values.length - i - 1; j++) {
+            bars[j].style.backgroundColor = 'red';
+            bars[j + 1].style.backgroundColor = 'red';
+            await sleep(3);
+
+            if (values[j] > values[j + 1]) {
+                const temp = values[j];
+                values[j] = values[j + 1];
+                values[j + 1] = temp;
+
+                bars[j].style.height = `${values[j]}%`;
+                bars[j].querySelector('.bar-value').textContent = values[j];
+
+                bars[j + 1].style.height = `${values[j + 1]}%`;
+                bars[j + 1].querySelector('.bar-value').textContent = values[j + 1];
+            }
+
+            bars[j].style.backgroundColor = '#4CAF50';
+            bars[j + 1].style.backgroundColor = '#4CAF50';
+        }
+
+        // Mark the sorted bar with a different color
+        bars[values.length - i - 1].style.backgroundColor = '#00bcd4';
+    }
+}
+
+
+async function mergeSortAnimation() {
+            const bars = document.querySelectorAll('.bar');
+            const values = Array.from(bars).map(bar => parseInt(bar.style.height));
+
+            await mergeSort(values, 0, values.length - 1, bars);
+        }
+
+        async function mergeSort(values, left, right, bars) {
+    if (left < right) {
+        const mid = Math.floor((left + right) / 2);
+
+        await mergeSort(values, left, mid, bars);
+        await mergeSort(values, mid + 1, right, bars);
+
+        await merge(values, left, mid, right, bars);
+    }
+}
+
+async function merge(values, left, mid, right, bars) {
+    const n1 = mid - left + 1;
+    const n2 = right - mid;
+
+    const leftArray = new Array(n1);
+    const rightArray = new Array(n2);
+
+    for (let i = 0; i < n1; i++) {
+        leftArray[i] = values[left + i];
+    }
+    for (let j = 0; j < n2; j++) {
+        rightArray[j] = values[mid + 1 + j];
+    }
+
+    let i = 0, j = 0, k = left;
+
+    while (i < n1 && j < n2) {
+        if (leftArray[i] <= rightArray[j]) {
+            values[k] = leftArray[i];
+            i++;
+        } else {
+            values[k] = rightArray[j];
+            j++;
+        }
+        await sleep(1);
+        swapBars(k, values[k], bars);
+        k++;
+    }
+
+    while (i < n1) {
+        values[k] = leftArray[i];
+        i++;
+        k++;
+        await sleep(1);
+        swapBars(k, values[k], bars);
+    }
+
+    while (j < n2) {
+        values[k] = rightArray[j];
+        j++;
+        k++;
+        await sleep(1);
+        swapBars(k, values[k], bars);
+    }
+}
+
+        async function quickSortAnimation() {
+            const bars = document.querySelectorAll('.bar');
+            const values = Array.from(bars).map(bar => parseInt(bar.style.height));
+
+            await quickSort(values, 0, values.length - 1, bars);
+        }
+
+        async function quickSort(values, low, high, bars) {
+            // Quick sort logic
+        }
+function swapBars(i, j, bars) {
+    const tempHeight = bars[i].style.height;
+    const tempValue = bars[i].querySelector('.bar-value').textContent;
+
+    bars[i].style.height = bars[j].style.height;
+    bars[i].querySelector('.bar-value').textContent = bars[j].querySelector('.bar-value').textContent;
+
+    bars[j].style.height = tempHeight;
+    bars[j].querySelector('.bar-value').textContent = tempValue;
+}
+
+// Sleep function to add delay for visualization
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+        async function shellSortAnimation() {
+    const bars = document.querySelectorAll('.bar');
+    const values = Array.from(bars).map(bar => parseInt(bar.style.height));
+    const n = values.length;
+
+    for (let gap = Math.floor(n / 2); gap > 0; gap = Math.floor(gap / 2)) {
+        for (let i = gap; i < n; i++) {
+            const current = values[i];
+            let j = i;
+
+            // Highlight bars being compared
+            bars[i].style.backgroundColor = 'red';
+
+            while (j >= gap && values[j - gap] > current) {
+                // Highlight bars being compared
+                bars[j - gap].style.backgroundColor = 'red';
+
+                // Swap bars
+                swapBars(j, j - gap, bars);
+                await sleep(3);
+
+                // Reset the color of bars being compared
+                bars[j - gap].style.backgroundColor = '#4CAF50';
+
+                j -= gap;
+            }
+
+            values[j] = current;
+            // Reset the color of bars being compared
+            bars[i].style.backgroundColor = '#4CAF50';
+        }
+    }
+}
+
+// Helper function to swap bars
+function swapBars(i, j, bars) {
+    const tempHeight = bars[i].style.height;
+    const tempValue = bars[i].querySelector('.bar-value').textContent;
+
+    bars[i].style.height = bars[j].style.height;
+    bars[i].querySelector('.bar-value').textContent = bars[j].querySelector('.bar-value').textContent;
+
+    bars[j].style.height = tempHeight;
+    bars[j].querySelector('.bar-value').textContent = tempValue;
+}
+
+// Sleep function to add delay for visualization
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+document.querySelector('.footup button:nth-child(1)').addEventListener('click', skipBack);
+document.querySelector('.footup button:nth-child(2)').addEventListener('click', stepBack);
+document.querySelector('.footup button:nth-child(3)').addEventListener('click', pause);
+document.querySelector('.footup button:nth-child(4)').addEventListener('click', stepForward);
+document.querySelector('.footup button:nth-child(5)').addEventListener('click', skipForward);
+
+
+        const numberOfBars = 50;
+        const graphContainer = document.getElementById('graph-container');
+        const randomValues = generateRandomValues(numberOfBars);
+        createBars(graphContainer, randomValues);
+
+
+        function skipBack() {
+            console.log('Skip Back');
+        }
+
+        function stepBack() {
+            console.log('Step Back');
+        }
+
+        function pause() {
+            console.log('Pause');
+        }
+
+        function stepForward() {
+            console.log('Step Forward');
+        }
+
+        function skipForward() {
+            console.log('Skip Forward');
+        }
+    </script>
+</body>
+</html>
